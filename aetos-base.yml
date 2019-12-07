@@ -1,0 +1,20 @@
+address: :22596
+metrics_path: /metrics/prometheus
+groups:
+  lightheus:
+    metrics:
+      performance:
+        help: lighthouse performance score
+        path: categories.performance.score
+      accessibility:
+        help: lighthouse accessibility score
+        path: categories.accessibility.score
+      best_practices:
+        help: lighthouse best-practices score
+        path: categories.best-practices.score
+      seo:
+        help: lighthouse seo score
+        path: categories.seo.score
+      pwa:
+        help: lighthouse pwa score
+        path: categories.pwa.score
