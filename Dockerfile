@@ -19,11 +19,9 @@ USER root
 
 RUN mkdir -p /opt/lightheus
 WORKDIR /opt/lightheus
-RUN mkdir -p /opt/data
 
-COPY --from=build /opt/lightheus/lightheus .
+COPY --from=build /opt/lightheus/lightheus /opt/lightheus/aetos-base.yml /opt/lightheus/lightheus.yml ./
 
 # EXPOSE 22596
 
-#TODO: read data from /opt/data/ 
 CMD ["./lightheus"]
