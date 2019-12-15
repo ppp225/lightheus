@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"io/ioutil"
-	"log"
 	"net/url"
 	"os"
 	"os/exec"
@@ -13,9 +12,15 @@ import (
 
 	"github.com/ppp225/aetos"
 	"github.com/ppp225/go-common"
+	log "github.com/ppp225/lvlog"
 
 	"github.com/go-playground/validator"
 	"gopkg.in/yaml.v2"
+)
+
+const (
+	pkg  = "lightheus"
+	pkgf = "pkg=lightheus"
 )
 
 type config struct {
@@ -26,7 +31,7 @@ func getConfigFromFile(path string) *config {
 	ymlBytes := loadFile(path)
 	var cfg config
 	if err := yaml.Unmarshal(ymlBytes, &cfg); err != nil {
-		log.Fatal(err)
+		log.Fatal(pkgf, err)
 	}
 	validateConfig(&cfg)
 	return &cfg
@@ -55,7 +60,7 @@ func validateConfig(cfg *config) {
 	})
 
 	if err := validate.Struct(cfg); err != nil {
-		log.Fatal(err)
+		log.Fatal(pkgf, err)
 	}
 }
 
@@ -118,23 +123,23 @@ func New(configPath string) *Lightheus {
 }
 
 func runLighthouse(outputJsonFile, url string) {
-	log.Printf("Lightheus: Processing file=%q | url=%q", outputJsonFile, url)
+	log.Printf("pkg=%s msg=%q file=%q url=%q", pkg, "Processing", outputJsonFile, url)
 	// cmd := exec.Command("lighthouse", "--chrome-flags=--headless --no-sandbox", "--no-enable-error-reporting", url, "--output", "json", "--output-path", outputJsonFile)
 	cmd := exec.Command("lighthouse", "--chrome-flags=--headless --no-sandbox", "--no-enable-error-reporting", "--emulated-form-factor", "mobile", url, "--output", "json", "--output-path", outputJsonFile)
-	stdout, err := cmd.Output()
+	stdout, err := cmd.CombinedOutput()
 	if err != nil {
 		idx := bytes.LastIndex(stdout, []byte("\n"))
 		if idx == -1 {
-			log.Printf("Lightheus: Error err=%q, msg=%q", err, stdout)
+			log.Errorf("pkg=%s msg=%q error=%q, stdout=%q", pkg, "exec error", err, stdout)
 		} else {
-			// log.Printf("Lightheus: Error err=%q, msg=%q", err, stdout[idx:])
-			log.Printf("Lightheus: Error err=%q, msg=%q", err, stdout)
+			// log.Errorf("pkg=%s err=%q, msg=%q", pkg, err, stdout[idx:])
+			log.Errorf("pkg=%s msg=%q error=%q, stdout=%q", pkg, "exec error", err, stdout)
 		}
 	}
 }
 
 func (v *Lightheus) Run() {
-	log.Printf("Lightheus: Looping over %d entries:", len(v.cfg.file2urlMap))
+	log.Printf("pkg=%s msg=\"Looping over %d entries:\"", pkg, len(v.cfg.file2urlMap))
 	for file, url := range v.cfg.file2urlMap {
 		runLighthouse(file, url)
 	}
